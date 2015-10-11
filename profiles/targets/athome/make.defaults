@@ -1,0 +1,2 @@
+USE="vim-syntax bash-completion kerberos"
+LINGUAS="fr"
