@@ -1,0 +1,10 @@
+# kernel
+sys-kernel/gentoo-sources
+
+# systemd
+sys-apps/systemd
+=virtual/libgudev-230
+=dev-libs/libgudev-230
+=sys-apps/util-linux-2.26.2
+=sys-apps/hwids-20150717-r1
+=sys-devel/gcc-config-1.8-r1

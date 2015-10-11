@@ -1,0 +1,8 @@
+-*sys-apps/openrc
+*app-admin/sudo
+*app-misc/screen
+*app-portage/gentoolkit
+*app-shells/bash-completion
+*sys-auth/sssd
+*sys-boot/grub
+*sys-kernel/gentoo-sources

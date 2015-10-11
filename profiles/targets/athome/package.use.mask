@@ -1,0 +1,5 @@
+sys-apps/groff X
+app-editors/vim X
+sys-process/psmisc X
+app-misc/lirc X
+virtual/mythtv -qt5
