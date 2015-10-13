@@ -1,5 +1,6 @@
 -*sys-apps/openrc
 *app-admin/sudo
+*app-editors/vim
 *app-misc/screen
 *app-portage/gentoolkit
 *app-shells/bash-completion
