@@ -12,3 +12,6 @@ sys-libs/tdb python
 net-nds/openldap minimal sasl
 net-dns/bind-tools gssapi
 sys-libs/glibc nscd
+
+# NFS
+net-fs/nfs-utils nfsv41
