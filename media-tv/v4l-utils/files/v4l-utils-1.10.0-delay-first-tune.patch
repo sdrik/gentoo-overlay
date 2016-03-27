@@ -1,0 +1,36 @@
+commit c62cf0469482141d356710cfbaabe7b1d562dc1a
+Author: Cédric Schieli <cschieli@gmail.com>
+Date:   Sat Mar 26 13:30:54 2016 +0100
+
+    Delay the first tuning a bit
+
+diff --git a/utils/dvb/dvbv5-scan.c b/utils/dvb/dvbv5-scan.c
+index 689bc0b..8e69813 100644
+--- a/utils/dvb/dvbv5-scan.c
++++ b/utils/dvb/dvbv5-scan.c
+@@ -189,6 +189,7 @@ static int check_frontend(void *__args,
+ 	int rc, i;
+ 	fe_status_t status;
+ 
++	usleep(100);
+ 	args->n_status_lines = 0;
+ 	for (i = 0; i < args->timeout_multiply * 40; i++) {
+ 		if (parms->abort)
+diff --git a/utils/dvb/dvbv5-zap.c b/utils/dvb/dvbv5-zap.c
+index e19d7c2..fcbeaf0 100644
+--- a/utils/dvb/dvbv5-zap.c
++++ b/utils/dvb/dvbv5-zap.c
+@@ -856,11 +856,13 @@ int main(int argc, char **argv)
+ 
+ 	if (args.exit_after_tuning) {
+ 		err = 0;
++		usleep(100);
+ 		check_frontend(&args, parms);
+ 		goto err;
+ 	}
+ 
+ 	if (args.traffic_monitor) {
++		usleep(100);
+ 		signal(SIGTERM, do_timeout);
+ 		signal(SIGINT, do_timeout);
+ 		if (args.timeout > 0) {

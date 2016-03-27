@@ -1,0 +1,270 @@
+diff --git a/lib/libdvbv5/dvb-demux.c b/lib/libdvbv5/dvb-demux.c
+index 30d4eda..867d7b9 100644
+--- a/lib/libdvbv5/dvb-demux.c
++++ b/lib/libdvbv5/dvb-demux.c
+@@ -40,6 +40,16 @@
+ 
+ #include <libdvbv5/dvb-demux.h>
+ 
++#define xioctl(fh, request, arg...) ({					\
++	int __rc, __retry;						\
++									\
++	for (__retry = 0; __retry < 10; __retry++) {			\
++		__rc = ioctl(fh, request, ##arg);			\
++	} while (__rc == -1 && ((errno == EINTR) || (errno == EAGAIN)));\
++									\
++	__rc;								\
++})
++
+ int dvb_dmx_open(int adapter, int demux)
+ {
+ 	char* demux_name = NULL;
+@@ -56,13 +66,13 @@ int dvb_dmx_open(int adapter, int demux)
+ 
+ void dvb_dmx_close(int dmx_fd)
+ {
+-	(void) ioctl(dmx_fd, DMX_STOP);
++	(void)xioctl(dmx_fd, DMX_STOP);
+ 	close( dmx_fd);
+ }
+ 
+ void dvb_dmx_stop(int dmx_fd)
+ {
+-	(void) ioctl(dmx_fd, DMX_STOP);
++	(void)xioctl(dmx_fd, DMX_STOP);
+ }
+ 
+ int dvb_set_pesfilter(int dmxfd, int pid, dmx_pes_type_t type,
+@@ -71,7 +81,7 @@ int dvb_set_pesfilter(int dmxfd, int pid, dmx_pes_type_t type,
+ 	struct dmx_pes_filter_params pesfilter;
+ 
+ 	if (buffersize) {
+-		if (ioctl(dmxfd, DMX_SET_BUFFER_SIZE, buffersize) == -1)
++		if (xioctl(dmxfd, DMX_SET_BUFFER_SIZE, buffersize) == -1)
+ 			perror("DMX_SET_BUFFER_SIZE failed");
+ 	}
+ 
+@@ -83,7 +93,7 @@ int dvb_set_pesfilter(int dmxfd, int pid, dmx_pes_type_t type,
+ 	pesfilter.pes_type = type;
+ 	pesfilter.flags = DMX_IMMEDIATE_START;
+ 
+-	if (ioctl(dmxfd, DMX_SET_PES_FILTER, &pesfilter) == -1) {
++	if (xioctl(dmxfd, DMX_SET_PES_FILTER, &pesfilter) == -1) {
+ 		fprintf(stderr, "DMX_SET_PES_FILTER failed "
+ 		"(PID = 0x%04x): %d %m\n", pid, errno);
+ 		return -1;
+@@ -116,7 +126,7 @@ int dvb_set_section_filter(int dmxfd, int pid, unsigned filtsize,
+ 
+ 	sctfilter.flags = flags;
+ 
+-	if (ioctl(dmxfd, DMX_SET_FILTER, &sctfilter) == -1) {
++	if (xioctl(dmxfd, DMX_SET_FILTER, &sctfilter) == -1) {
+ 		fprintf(stderr, "DMX_SET_FILTER failed (PID = 0x%04x): %d %m\n",
+ 			pid, errno);
+ 		return -1;
+@@ -142,7 +152,7 @@ int dvb_get_pmt_pid(int patfd, int sid)
+ 	f.timeout = 0;
+ 	f.flags = DMX_IMMEDIATE_START | DMX_CHECK_CRC;
+ 
+-	if (ioctl(patfd, DMX_SET_FILTER, &f) == -1) {
++	if (xioctl(patfd, DMX_SET_FILTER, &f) == -1) {
+ 		perror("ioctl DMX_SET_FILTER failed");
+ 		return -1;
+ 	}
+diff --git a/lib/libdvbv5/dvb-fe.c b/lib/libdvbv5/dvb-fe.c
+index f535311..b27cfe6 100644
+--- a/lib/libdvbv5/dvb-fe.c
++++ b/lib/libdvbv5/dvb-fe.c
+@@ -27,6 +27,16 @@
+ #include <stddef.h>
+ #include <unistd.h>
+ 
++#define xioctl(fh, request, arg...) ({					\
++	int __rc, __retry;						\
++									\
++	for (__retry = 0; __retry < 10; __retry++) {			\
++		__rc = ioctl(fh, request, ##arg);			\
++	} while (__rc == -1 && ((errno == EINTR) || (errno == EAGAIN)));\
++									\
++	__rc;								\
++})
++
+ static void dvb_v5_free(struct dvb_v5_fe_parms_priv *parms)
+ {
+ 	if (parms->fname)
+@@ -114,7 +124,7 @@ struct dvb_v5_fe_parms *dvb_fe_open_flags(int adapter, int frontend,
+ 	parms->p.sat_number = -1;
+ 	parms->p.abort = 0;
+ 
+-	if (ioctl(fd, FE_GET_INFO, &parms->p.info) == -1) {
++	if (xioctl(fd, FE_GET_INFO, &parms->p.info) == -1) {
+ 		dvb_perror("FE_GET_INFO");
+ 		dvb_v5_free(parms);
+ 		close(fd);
+@@ -140,10 +150,15 @@ struct dvb_v5_fe_parms *dvb_fe_open_flags(int adapter, int frontend,
+ 	dtv_prop.props = parms->dvb_prop;
+ 
+ 	/* Detect a DVBv3 device */
+-	if (ioctl(fd, FE_GET_PROPERTY, &dtv_prop) == -1) {
+-		parms->dvb_prop[0].u.data = 0x300;
+-		parms->dvb_prop[1].u.data = SYS_UNDEFINED;
++	if (xioctl(fd, FE_GET_PROPERTY, &dtv_prop) == -1) {
++		dvb_logerr("Too many retry attempts on FE_GET_PROPERTY");
++		dvb_v5_free(parms);
++		close(fd);
++		return NULL;
+ 	}
++	parms->dvb_prop[0].u.data = 0x300;
++	parms->dvb_prop[1].u.data = SYS_UNDEFINED;
++
+ 	parms->p.version = parms->dvb_prop[0].u.data;
+ 	parms->p.current_sys = parms->dvb_prop[1].u.data;
+ 	if (verbose)
+@@ -205,7 +220,7 @@ struct dvb_v5_fe_parms *dvb_fe_open_flags(int adapter, int frontend,
+ 		parms->n_props = 1;
+ 		dtv_prop.num = 1;
+ 		dtv_prop.props = parms->dvb_prop;
+-		if (ioctl(fd, FE_GET_PROPERTY, &dtv_prop) == -1) {
++		if (xioctl(fd, FE_GET_PROPERTY, &dtv_prop) == -1) {
+ 			dvb_perror("FE_GET_PROPERTY");
+ 			dvb_v5_free(parms);
+ 			close(fd);
+@@ -359,7 +374,7 @@ int dvb_set_sys(struct dvb_v5_fe_parms *p, fe_delivery_system_t sys)
+ 		prop.num = 1;
+ 		prop.props = dvb_prop;
+ 
+-		if (ioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
++		if (xioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
+ 			dvb_perror("Set delivery system");
+ 			return errno;
+ 		}
+@@ -598,7 +613,7 @@ int dvb_fe_get_parms(struct dvb_v5_fe_parms *p)
+ 	prop.props = fe_prop;
+ 	prop.num = n;
+ 	if (!parms->p.legacy_fe) {
+-		if (ioctl(parms->fd, FE_GET_PROPERTY, &prop) == -1) {
++		if (xioctl(parms->fd, FE_GET_PROPERTY, &prop) == -1) {
+ 			dvb_perror("FE_GET_PROPERTY");
+ 			return errno;
+ 		}
+@@ -615,7 +630,7 @@ int dvb_fe_get_parms(struct dvb_v5_fe_parms *p)
+ 		return 0;
+ 	}
+ 	/* DVBv3 call */
+-	if (ioctl(parms->fd, FE_GET_FRONTEND, &v3_parms) == -1) {
++	if (xioctl(parms->fd, FE_GET_FRONTEND, &v3_parms) == -1) {
+ 		dvb_perror("FE_GET_FRONTEND");
+ 		return EINVAL;
+ 	}
+@@ -676,7 +691,7 @@ int dvb_fe_set_parms(struct dvb_v5_fe_parms *p)
+ 		prop.props[0].cmd = DTV_LNA;
+ 		prop.props[0].u.data = parms->p.lna;
+ 		prop.num = 1;
+-		if (ioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
++		if (xioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
+ 			dvb_perror("Setting LNA");
+ 			parms->p.lna = LNA_AUTO;
+ 		} else if (parms->p.lna != LNA_AUTO && parms->p.verbose)
+@@ -698,7 +713,7 @@ int dvb_fe_set_parms(struct dvb_v5_fe_parms *p)
+ 	prop.num++;
+ 
+ 	if (!parms->p.legacy_fe) {
+-		if (ioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
++		if (xioctl(parms->fd, FE_SET_PROPERTY, &prop) == -1) {
+ 			dvb_perror("FE_SET_PROPERTY");
+ 			if (parms->p.verbose)
+ 				dvb_fe_prt_parms(&parms->p);
+@@ -741,7 +756,7 @@ int dvb_fe_set_parms(struct dvb_v5_fe_parms *p)
+ 	default:
+ 		return EINVAL;
+ 	}
+-	if (ioctl(tmp_parms.fd, FE_SET_FRONTEND, &v3_parms) == -1) {
++	if (xioctl(tmp_parms.fd, FE_SET_FRONTEND, &v3_parms) == -1) {
+ 		dvb_perror("FE_SET_FRONTEND");
+ 		if (tmp_parms.p.verbose)
+ 			dvb_fe_prt_parms(&tmp_parms.p);
+@@ -1217,7 +1232,7 @@ int dvb_fe_get_stats(struct dvb_v5_fe_parms *p)
+ 	int i;
+ 	enum fecap_scale_params scale;
+ 
+-	if (ioctl(parms->fd, FE_READ_STATUS, &status) == -1) {
++	if (xioctl(parms->fd, FE_READ_STATUS, &status) == -1) {
+ 		dvb_perror("FE_READ_STATUS");
+ 		return EINVAL;
+ 	}
+@@ -1238,8 +1253,11 @@ int dvb_fe_get_stats(struct dvb_v5_fe_parms *p)
+ 		props.props = parms->stats.prop;
+ 
+ 		/* Do a DVBv5.10 stats call */
+-		if (ioctl(parms->fd, FE_GET_PROPERTY, &props) == -1)
++		if (ioctl(parms->fd, FE_GET_PROPERTY, &props) == -1) {
++			if (errno == EAGAIN)
++				return 0;
+ 			goto dvbv3_fallback;
++		}
+ 
+ 		/*
+ 		 * All props with len=0 mean that this device doesn't have any
+@@ -1315,7 +1333,7 @@ int dvb_fe_get_event(struct dvb_v5_fe_parms *p)
+ 		return dvb_fe_get_stats(&parms->p);
+ 	}
+ 
+-	if (ioctl(parms->fd, FE_GET_EVENT, &event) == -1) {
++	if (xioctl(parms->fd, FE_GET_EVENT, &event) == -1) {
+ 		dvb_perror("FE_GET_EVENT");
+ 		return errno;
+ 	}
+@@ -1593,7 +1611,7 @@ int dvb_fe_sec_voltage(struct dvb_v5_fe_parms *p, int on, int v18)
+ 		if (parms->p.verbose)
+ 			dvb_log("DiSEqC VOLTAGE: %s", v18 ? "18" : "13");
+ 	}
+-	rc = ioctl(parms->fd, FE_SET_VOLTAGE, v);
++	rc = xioctl(parms->fd, FE_SET_VOLTAGE, v);
+ 	if (rc == -1)
+ 		dvb_perror("FE_SET_VOLTAGE");
+ 	return rc;
+@@ -1605,7 +1623,7 @@ int dvb_fe_sec_tone(struct dvb_v5_fe_parms *p, fe_sec_tone_mode_t tone)
+ 	int rc;
+ 	if (parms->p.verbose)
+ 		dvb_log( "DiSEqC TONE: %s", fe_tone_name[tone] );
+-	rc = ioctl(parms->fd, FE_SET_TONE, tone);
++	rc = xioctl(parms->fd, FE_SET_TONE, tone);
+ 	if (rc == -1)
+ 		dvb_perror("FE_SET_TONE");
+ 	return rc;
+@@ -1619,7 +1637,7 @@ int dvb_fe_lnb_high_voltage(struct dvb_v5_fe_parms *p, int on)
+ 	if (on) on = 1;
+ 	if (parms->p.verbose)
+ 		dvb_log( "DiSEqC HIGH LNB VOLTAGE: %s", on ? "ON" : "OFF" );
+-	rc = ioctl(parms->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, on);
++	rc = xioctl(parms->fd, FE_ENABLE_HIGH_LNB_VOLTAGE, on);
+ 	if (rc == -1)
+ 		dvb_perror("FE_ENABLE_HIGH_LNB_VOLTAGE");
+ 	return rc;
+@@ -1635,7 +1653,7 @@ int dvb_fe_diseqc_burst(struct dvb_v5_fe_parms *p, int mini_b)
+ 
+ 	if (parms->p.verbose)
+ 		dvb_log( "DiSEqC BURST: %s", mini_b ? "SEC_MINI_B" : "SEC_MINI_A" );
+-	rc = ioctl(parms->fd, FE_DISEQC_SEND_BURST, mini);
++	rc = xioctl(parms->fd, FE_DISEQC_SEND_BURST, mini);
+ 	if (rc == -1)
+ 		dvb_perror("FE_DISEQC_SEND_BURST");
+ 	return rc;
+@@ -1664,7 +1682,7 @@ int dvb_fe_diseqc_cmd(struct dvb_v5_fe_parms *p, const unsigned len,
+ 		dvb_log("%s", log);
+ 	}
+ 
+-	rc = ioctl(parms->fd, FE_DISEQC_SEND_MASTER_CMD, &msg);
++	rc = xioctl(parms->fd, FE_DISEQC_SEND_MASTER_CMD, &msg);
+ 	if (rc == -1)
+ 		dvb_perror("FE_DISEQC_SEND_MASTER_CMD");
+ 	return rc;
+@@ -1686,7 +1704,7 @@ int dvb_fe_diseqc_reply(struct dvb_v5_fe_parms *p, unsigned *len, char *buf,
+ 	if (parms->p.verbose)
+ 		dvb_log("DiSEqC FE_DISEQC_RECV_SLAVE_REPLY");
+ 
+-	rc = ioctl(parms->fd, FE_DISEQC_RECV_SLAVE_REPLY, reply);
++	rc = xioctl(parms->fd, FE_DISEQC_RECV_SLAVE_REPLY, reply);
+ 	if (rc == -1) {
+ 		dvb_perror("FE_DISEQC_RECV_SLAVE_REPLY");
+ 		return rc;
