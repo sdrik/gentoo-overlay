@@ -1,0 +1,63 @@
+commit 7bc7e90106ab739833851ff465e8faf9c89bb4f9
+Author: Cédric Schieli <cschieli@gmail.com>
+Date:   Sat Mar 26 15:51:41 2016 +0100
+
+    Include NETWORK_ID and TRANSPORT_ID in channel file
+
+diff --git a/lib/include/libdvbv5/dvb-file.h b/lib/include/libdvbv5/dvb-file.h
+index b46c646..8474234 100644
+--- a/lib/include/libdvbv5/dvb-file.h
++++ b/lib/include/libdvbv5/dvb-file.h
+@@ -116,6 +116,9 @@ struct dvb_entry {
+ 	unsigned freq_bpf;
+ 	unsigned diseqc_wait;
+ 	char *lnb;
++
++	uint16_t network_id;
++	uint16_t transport_id;
+ };
+ 
+ /**
+diff --git a/lib/libdvbv5/dvb-file.c b/lib/libdvbv5/dvb-file.c
+index 423a712..ed36f6c 100644
+--- a/lib/libdvbv5/dvb-file.c
++++ b/lib/libdvbv5/dvb-file.c
+@@ -610,6 +610,16 @@ static int fill_entry(struct dvb_entry *entry, char *key, char *value)
+ 		return 0;
+ 	}
+ 
++	if (!strcasecmp(key, "NETWORK_ID")) {
++		entry->network_id = atol(value);
++		return 0;
++	}
++
++	if (!strcasecmp(key, "TRANSPORT_ID")) {
++		entry->transport_id = atol(value);
++		return 0;
++	}
++
+ 	if (!strcasecmp(key, "VCHANNEL")) {
+ 		entry->vchannel = strdup(value);
+ 		return 0;
+@@ -908,6 +918,12 @@ int dvb_write_file(const char *fname, struct dvb_file *dvb_file)
+ 		if (entry->lnb)
+ 				fprintf(fp, "\tLNB = %s\n", entry->lnb);
+ 
++		if (entry->network_id)
++				fprintf(fp, "\tNETWORK_ID = %d\n", entry->network_id);
++
++		if (entry->transport_id)
++				fprintf(fp, "\tTRANSPORT_ID = %d\n", entry->transport_id);
++
+ 		for (i = 0; i < entry->n_props; i++) {
+ 			const char * const *attr_name = dvb_attr_names(entry->props[i].cmd);
+ 			const char *buf;
+@@ -1166,6 +1182,8 @@ static int get_program_and_store(struct dvb_v5_fe_parms_priv *parms,
+ 	entry->sat_number = parms->p.sat_number;
+ 	entry->freq_bpf = parms->p.freq_bpf;
+ 	entry->diseqc_wait = parms->p.diseqc_wait;
++	entry->network_id = dvb_scan_handler->sdt->network_id;
++	entry->transport_id = dvb_scan_handler->sdt->header.id;
+ 	if (parms->p.lnb)
+ 		entry->lnb = strdup(parms->p.lnb->alias);
+ 

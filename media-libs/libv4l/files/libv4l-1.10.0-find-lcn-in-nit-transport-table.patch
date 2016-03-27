@@ -1,0 +1,39 @@
+commit bbd377fe71c783bdebe3bdefd0b199392236733d
+Author: Cédric Schieli <cschieli@gmail.com>
+Date:   Sat Mar 26 13:31:44 2016 +0100
+
+    Also search for logical_channel_number_descriptor in the nit_transport_table
+
+diff --git a/lib/libdvbv5/dvb-file.c b/lib/libdvbv5/dvb-file.c
+index 3fda65f..423a712 100644
+--- a/lib/libdvbv5/dvb-file.c
++++ b/lib/libdvbv5/dvb-file.c
+@@ -959,9 +959,25 @@ static char *dvb_vchannel(struct dvb_v5_fe_parms_priv *parms,
+ 	if (!nit)
+ 		return NULL;
+ 
+-	for( struct dvb_desc_logical_channel *desc = (struct dvb_desc_logical_channel *) nit->descriptor; desc; desc = (struct dvb_desc_logical_channel *) desc->next ) \
+-		if(desc->type == logical_channel_number_descriptor) {
+-/* FIXME:  dvb_desc_find(struct dvb_desc_logical_channel, desc, nit, logical_channel_number_descriptor) ? */
++	dvb_desc_find(struct dvb_desc_logical_channel, desc, nit, logical_channel_number_descriptor) {
++		struct dvb_desc_logical_channel *d = (void *)desc;
++		size_t len;
++		int r;
++
++		len = d->length / sizeof(d->lcn);
++		for (i = 0; i < len; i++) {
++			if (service_id == d->lcn[i].service_id) {
++				r = asprintf(&buf, "%d.%d",
++					d->lcn[i].logical_channel_number, i);
++				if (r < 0)
++					dvb_perror("asprintf");
++				return buf;
++			}
++		}
++	}
++
++	dvb_nit_transport_foreach(transport, nit) \
++	dvb_desc_find(struct dvb_desc_logical_channel, desc, transport, logical_channel_number_descriptor) {
+ 		struct dvb_desc_logical_channel *d = (void *)desc;
+ 		size_t len;
+ 		int r;
