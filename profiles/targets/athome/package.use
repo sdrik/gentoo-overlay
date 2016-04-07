@@ -4,6 +4,7 @@ net-misc/rsync xattr
 
 # For systemd
 sys-kernel/gentoo-sources experimental kdbus
+sys-apps/dbus user-session
 
 # For sssd
 sys-auth/sssd -acl
