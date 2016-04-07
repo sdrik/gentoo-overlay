@@ -1,3 +1,4 @@
-x86	default/linux/x86/13.0/systemd	stable
-x86	default/linux/x86/13.0/athome	stable
-amd64	default/linux/amd64/13.0/athome	stable
+x86	default/linux/x86/13.0/systemd			stable
+x86	default/linux/x86/13.0/athome			stable
+amd64	default/linux/amd64/13.0/athome			stable
+amd64	default/linux/amd64/13.0/athome/container	stable
