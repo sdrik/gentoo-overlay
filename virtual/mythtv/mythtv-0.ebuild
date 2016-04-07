@@ -119,4 +119,5 @@ RDEPEND="
 	dev-lang/yasm
 	x11-proto/xineramaproto
 	x11-proto/xf86vidmodeproto
+	media-gfx/exiv2
 	"
