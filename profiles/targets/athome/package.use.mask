@@ -2,3 +2,6 @@ sys-apps/groff X
 app-editors/vim X
 sys-process/psmisc X
 app-misc/lirc X
+
+# tempo: avoid rebuild
+=sys-devel/gcc-4.9.3 vtv
