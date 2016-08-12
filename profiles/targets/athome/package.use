@@ -16,3 +16,6 @@ sys-libs/glibc nscd
 
 # NFS
 net-fs/nfs-utils nfsv41
+
+# MythTV
+virtual/mythtv -mythlogserver

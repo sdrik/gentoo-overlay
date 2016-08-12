@@ -6,3 +6,6 @@ sys-apps/systemd
 sys-apps/util-linux
 app-shells/bash-completion
 =sys-devel/gcc-config-1.8-r1
+
+# mythtv
+virtual/mythtv
