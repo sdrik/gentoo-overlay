@@ -4,6 +4,5 @@ sys-kernel/gentoo-sources
 # systemd
 sys-apps/systemd
 sys-apps/util-linux
-app-arch/lz4
 app-shells/bash-completion
 =sys-devel/gcc-config-1.8-r1
