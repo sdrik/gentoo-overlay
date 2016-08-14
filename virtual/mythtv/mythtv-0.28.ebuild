@@ -37,6 +37,7 @@ RDEPEND="
 	x11-libs/libXrandr:=
 	x11-libs/libXxf86vm:=
 	dev-qt/qtcore:5=
+	dev-qt/qtxml:5=
 	dev-qt/qtdbus:5=
 	dev-qt/qtgui:5=
 	dev-qt/qtscript:5=
