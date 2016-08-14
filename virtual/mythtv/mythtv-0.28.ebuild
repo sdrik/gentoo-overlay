@@ -28,6 +28,7 @@ REQUIRED_USE="
 RDEPEND="
 	>=media-libs/freetype-2.0:=
 	>=media-sound/lame-3.93.1
+	media-gfx/exiv2:=
 	sys-libs/zlib:=
 	x11-libs/libX11:=
 	x11-libs/libXext:=
