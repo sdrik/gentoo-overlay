@@ -4,6 +4,7 @@
 *app-misc/screen
 *app-portage/gentoolkit
 *app-shells/bash-completion
+*dev-vcs/git
 *net-fs/nfs-utils
 *sys-auth/sssd
 *sys-boot/grub

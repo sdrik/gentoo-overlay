@@ -3,7 +3,6 @@ sys-apps/systemd sysv-utils
 net-misc/rsync xattr
 
 # For systemd
-sys-kernel/gentoo-sources experimental kdbus
 sys-apps/dbus user-session
 
 # For sssd
@@ -16,6 +15,12 @@ sys-libs/glibc nscd
 
 # NFS
 net-fs/nfs-utils nfsv41
+
+# QT5
+dev-libs/libpcre pcre16
+dev-qt/qtcore icu
+x11-libs/libxcb xkb
+x11-libs/libxkbcommon X
 
 # MythTV
 virtual/mythtv -mythlogserver
