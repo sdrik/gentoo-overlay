@@ -1,3 +1,4 @@
 x86	default/linux/x86/13.0/athome			stable
 amd64	default/linux/amd64/13.0/athome			stable
 amd64	default/linux/amd64/13.0/athome/container	stable
+arm	default/linux/arm/13.0/armv7a/athome		stable
