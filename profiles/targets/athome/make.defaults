@@ -1,4 +1,3 @@
 USE="vim-syntax bash-completion kerberos qt5 -gtk"
 LINGUAS="fr en"
 L10N="fr en"
-RUBY_TARGETS="ruby21"
