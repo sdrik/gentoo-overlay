@@ -4,6 +4,7 @@ net-misc/rsync xattr
 
 # For systemd
 sys-apps/dbus user-session
+net-wireless/bluez user-session
 
 # For sssd
 sys-auth/sssd -acl
