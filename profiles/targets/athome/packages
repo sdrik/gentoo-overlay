@@ -9,3 +9,4 @@
 *sys-auth/sssd
 *sys-boot/grub
 *sys-kernel/gentoo-sources
+*net-misc/wakeonlan
