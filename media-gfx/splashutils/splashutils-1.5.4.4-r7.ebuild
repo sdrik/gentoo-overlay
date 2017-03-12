@@ -1,6 +1,5 @@
 # Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 inherit autotools eutils multilib toolchain-funcs
@@ -18,10 +17,10 @@ JPEGSRC="libs/jpeg-${V_JPEG}"
 FT2SRC="libs/freetype-${V_FT}"
 
 RESTRICT="test"
-IUSE="+openrc hardened +png +truetype gpm fbcondecor"
+IUSE="hardened +png +truetype gpm fbcondecor +openrc"
 
 DESCRIPTION="Framebuffer splash utilities"
-HOMEPAGE="http://sourceforge.net/projects/fbsplash.berlios/"
+HOMEPAGE="https://sourceforge.net/projects/fbsplash.berlios/"
 SRC_URI="
 	mirror://sourceforge/fbsplash.berlios/${PN}-lite-${PV}.tar.bz2
 	mirror://sourceforge/fbsplash.berlios/${GENTOOSPLASH}.tar.bz2
@@ -34,7 +33,7 @@ SRC_URI="
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~alpha amd64 ~arm ~ia64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="~alpha amd64 ~arm ~ia64 ~ppc ~ppc64 ~sparc x86"
 
 RDEPEND="
 	gpm? ( sys-libs/gpm[static-libs(+)] )
