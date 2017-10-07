@@ -2,6 +2,7 @@ app-admin/sudo -sendmail
 sys-apps/systemd sysv-utils
 net-misc/rsync xattr
 sys-devel/distcc crossdev
+sys-firmware/intel-microcode monolithic
 
 # For systemd
 sys-apps/dbus user-session
