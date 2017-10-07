@@ -2,10 +2,6 @@
 sys-kernel/gentoo-sources
 
 # systemd
-sys-apps/systemd
-sys-apps/util-linux
-sys-libs/libseccomp
-app-shells/bash-completion
 =sys-devel/gcc-config-1.8-r1
 
 # mythtv
