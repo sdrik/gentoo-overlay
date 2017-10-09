@@ -28,3 +28,5 @@ x11-libs/libxkbcommon X
 # MythTV
 virtual/mythtv -mythlogserver
 dev-qt/qtgui jpeg
+virtual/mysql -server
+dev-db/mariadb -server
