@@ -1,8 +1,5 @@
 # kernel
 sys-kernel/gentoo-sources
 
-# systemd
-=sys-devel/gcc-config-1.8-r1
-
 # mythtv
 virtual/mythtv
