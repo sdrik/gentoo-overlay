@@ -33,3 +33,18 @@ virtual/mythtv -mythlogserver
 dev-qt/qtgui jpeg
 virtual/mysql -server
 dev-db/mariadb -server
+
+# ABCDE
+media-sound/abcde flac cdparanoia musicbrainz -id3tag -lame
+
+# Android SDK
+sys-libs/ncurses:5 abi_x86_32
+sys-libs/zlib abi_x86_32
+dev-java/oracle-jdk-bin jce
+
+# Chrome
+app-text/xmlto text
+app-text/ghostscript-gpl cups
+
+# Docker
+app-emulation/docker btrfs overlay
