@@ -2,3 +2,7 @@ x86	default/linux/x86/13.0/athome			stable
 amd64	default/linux/amd64/13.0/athome			stable
 amd64	default/linux/amd64/13.0/athome/container	stable
 arm	default/linux/arm/13.0/armv7a/athome		stable
+
+x86	default/linux/x86/17.0/systemd			stable
+amd64	default/linux/amd64/17.0/systemd		stable
+arm	default/linux/arm/17.0/armv7a/systemd		stable
