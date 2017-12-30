@@ -4,5 +4,5 @@ FEATURES="binpkg-multi-instance buildpkg splitdebug"
 GENTOO_MIRRORS="ftp://ftp.free.fr/mirrors/ftp.gentoo.org/ http://ftp.free.fr/mirrors/ftp.gentoo.org/"
 
 USE="vim-syntax bash-completion kerberos qt5 -gtk"
-LINGUAS="fr en"
-L10N="fr en"
+LINGUAS="fr fr_FR en en_US"
+L10N="fr en en-US"
