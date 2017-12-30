@@ -1,6 +1,9 @@
+# Misc system packages
 app-admin/sudo -sendmail
-sys-apps/systemd sysv-utils
+app-misc/mc sftp
+app-portage/layman sync-plugin-portage
 net-misc/rsync xattr
+sys-apps/systemd sysv-utils
 sys-devel/distcc crossdev
 sys-firmware/intel-microcode monolithic
 
