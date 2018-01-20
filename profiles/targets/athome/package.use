@@ -6,6 +6,7 @@ net-misc/rsync xattr
 sys-apps/systemd sysv-utils
 sys-devel/distcc crossdev
 sys-firmware/intel-microcode monolithic
+virtual/linux-sources firmware
 
 # For sssd
 sys-auth/sssd -acl

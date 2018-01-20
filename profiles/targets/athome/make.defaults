@@ -1,4 +1,4 @@
-EMERGE_DEFAULT_OPTS="--usepkg=y --binpkg-respect-use=y --binpkg-changed-deps=y --buildpkg-exclude \"virtual/* sys-kernel/*-sources\""
+EMERGE_DEFAULT_OPTS="--usepkg=y --binpkg-respect-use=y --binpkg-changed-deps=y --buildpkg-exclude \"virtual/* sys-kernel/*-sources sys-kernel/linux-firmware\""
 REVDEP_REBUILD_DEFAULT_OPTS="--usepkg=n"
 FEATURES="binpkg-multi-instance buildpkg splitdebug"
 GENTOO_MIRRORS="ftp://ftp.free.fr/mirrors/ftp.gentoo.org/ http://ftp.free.fr/mirrors/ftp.gentoo.org/"

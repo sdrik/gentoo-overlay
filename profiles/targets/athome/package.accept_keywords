@@ -1,5 +1,6 @@
 # kernel
 sys-kernel/gentoo-sources
+sys-kernel/linux-firmware
 
 # mythtv
 virtual/mythtv
