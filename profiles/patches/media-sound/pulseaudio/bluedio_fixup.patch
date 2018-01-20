@@ -64,7 +64,7 @@ diff -urN pulseaudio-6.0.orig/src/module-bluedio-fixup-symdef.h pulseaudio-6.0/s
 diff -urN pulseaudio-6.0.orig/src/modules/bluetooth/module-bluedio-fixup.c pulseaudio-6.0/src/modules/bluetooth/module-bluedio-fixup.c
 --- pulseaudio-6.0.orig/src/modules/bluetooth/module-bluedio-fixup.c	1970-01-01 01:00:00.000000000 +0100
 +++ pulseaudio-6.0/src/modules/bluetooth/module-bluedio-fixup.c	2015-10-10 17:16:37.242266914 +0200
-@@ -0,0 +1,218 @@
+@@ -0,0 +1,217 @@
 +#ifdef HAVE_CONFIG_H
 +#include <config.h>
 +#endif
@@ -129,14 +129,13 @@ diff -urN pulseaudio-6.0.orig/src/modules/bluetooth/module-bluedio-fixup.c pulse
 +
 +static void play_sample(pa_mainloop_api *api PA_GCC_UNUSED, void *userdata) {
 +    struct userdata *u = userdata;
-+    pa_sink *sink;
 +
 +    pa_assert(u);
 +
-+    if ((sink = pa_namereg_get(u->core, EQ_SINK_NAME, PA_NAMEREG_SINK))) {
++    if (pa_namereg_is_valid_name(EQ_SINK_NAME)) {
 +        if (pa_scache_play_item_by_name(u->core, u->sample, EQ_SINK_NAME, 65536, NULL, NULL) < 0)
 +            pa_log_warn("Error playing sample");
-+        pa_namereg_set_default_sink(u->core, sink);
++        pa_core_set_configured_default_sink(u->core, EQ_SINK_NAME);
 +    }
 +}
 +
