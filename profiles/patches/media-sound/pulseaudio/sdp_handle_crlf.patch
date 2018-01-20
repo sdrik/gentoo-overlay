@@ -1,0 +1,54 @@
+diff -ur pulseaudio-8.0.orig/src/modules/rtp/sdp.c pulseaudio-8.0/src/modules/rtp/sdp.c
+--- pulseaudio-8.0.orig/src/modules/rtp/sdp.c	2016-01-22 08:26:49.000000000 +0100
++++ pulseaudio-8.0/src/modules/rtp/sdp.c	2016-05-07 11:23:01.225211264 +0200
+@@ -64,7 +64,7 @@
+     pa_assert_se(inet_ntop(af, dst, buf_dst, sizeof(buf_dst)));
+ 
+     return pa_sprintf_malloc(
+-            PA_SDP_HEADER
++            PA_SDP_HEADER "\n"
+             "o=%s %lu 0 IN %s %s\n"
+             "s=%s\n"
+             "c=IN %s %s\n"
+@@ -133,11 +133,20 @@
+     }
+ 
+     t += sizeof(PA_SDP_HEADER)-1;
++    if (*t == '\r')
++        t++;
++    if (*t != '\n') {
++        pa_log("Failed to parse SDP data: invalid header.");
++        goto fail;
++    }
++    t++;
+ 
+     while (*t) {
+         size_t l;
+ 
+         l = strcspn(t, "\n");
++	if (t[l-1] == '\r')
++	    l--;
+ 
+         if (l <= 2) {
+             pa_log("Failed to parse SDP data: line too short: >%s<.", t);
+@@ -234,6 +243,8 @@
+ 
+         t += l;
+ 
++        if (*t == '\r')
++            t++;
+         if (*t == '\n')
+             t++;
+     }
+diff -ur pulseaudio-8.0.orig/src/modules/rtp/sdp.h pulseaudio-8.0/src/modules/rtp/sdp.h
+--- pulseaudio-8.0.orig/src/modules/rtp/sdp.h	2015-09-10 06:51:41.000000000 +0200
++++ pulseaudio-8.0/src/modules/rtp/sdp.h	2016-05-07 11:15:41.270216302 +0200
+@@ -26,7 +26,7 @@
+ 
+ #include <pulse/sample.h>
+ 
+-#define PA_SDP_HEADER "v=0\n"
++#define PA_SDP_HEADER "v=0"
+ 
+ typedef struct pa_sdp_info {
+     char *origin;

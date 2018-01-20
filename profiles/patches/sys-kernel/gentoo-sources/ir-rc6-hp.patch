@@ -1,0 +1,20 @@
+--- linux-3.18.1-aufs/drivers/media/rc/ir-rc6-decoder.c.orig	2014-12-07 23:21:05.000000000 +0100
++++ linux-3.18.1-aufs/drivers/media/rc/ir-rc6-decoder.c	2015-01-04 14:26:39.481994486 +0100
+@@ -40,6 +40,7 @@
+ #define RC6_6A_MCE_TOGGLE_MASK	0x8000	/* for the body bits */
+ #define RC6_6A_LCC_MASK		0xffff0000 /* RC6-6A-32 long customer code mask */
+ #define RC6_6A_MCE_CC		0x800f0000 /* MCE customer code */
++#define RC6_6A_HP_CC		0x80110000 /* HP customer code */
+ #ifndef CHAR_BIT
+ #define CHAR_BIT 8	/* Normally in <limits.h> */
+ #endif
+@@ -257,7 +258,8 @@
+ 				toggle = 0;
+ 				break;
+ 			case 32:
+-				if ((scancode & RC6_6A_LCC_MASK) == RC6_6A_MCE_CC) {
++				if (((scancode & RC6_6A_LCC_MASK) == RC6_6A_MCE_CC) ||
++					((scancode & RC6_6A_LCC_MASK) == RC6_6A_HP_CC)) {
+ 					protocol = RC_TYPE_RC6_MCE;
+ 					toggle = !!(scancode & RC6_6A_MCE_TOGGLE_MASK);
+ 					scancode &= ~RC6_6A_MCE_TOGGLE_MASK;

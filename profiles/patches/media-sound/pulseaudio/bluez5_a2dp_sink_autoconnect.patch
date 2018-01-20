@@ -1,0 +1,65 @@
+diff -urN pulseaudio-6.0.orig/src/modules/bluetooth/bluez5-util.c pulseaudio-6.0/src/modules/bluetooth/bluez5-util.c
+--- pulseaudio-6.0.orig/src/modules/bluetooth/bluez5-util.c	2015-02-12 15:10:35.000000000 +0100
++++ pulseaudio-6.0/src/modules/bluetooth/bluez5-util.c	2015-10-10 16:42:02.395061761 +0200
+@@ -613,6 +613,19 @@
+             break;
+         }
+ 
++        case DBUS_TYPE_BOOLEAN: {
++            bool value;
++            dbus_message_iter_get_basic(&variant_i, &value);
++
++            if (pa_streq(key, "Connected")) {
++                pa_log_debug("%s: %d", key, value);
++                if (value && pa_hashmap_get(d->uuids, PA_BLUETOOTH_UUID_A2DP_SINK))
++                    pa_mainloop_api_once(d->discovery->core->mainloop, connect_a2dp_profile, d);
++            }
++
++            break;
++        }
++
+         case DBUS_TYPE_ARRAY: {
+             DBusMessageIter ai;
+             dbus_message_iter_recurse(&variant_i, &ai);
+@@ -1570,6 +1584,30 @@
+     }
+ }
+ 
++static void connect_profile_reply(DBusPendingCall *pending, void *userdata) {
++    pa_log_debug("MYTEST");
++}
++
++void connect_a2dp_profile(pa_mainloop_api *api PA_GCC_UNUSED, void *userdata) {
++    pa_bluetooth_device *d = userdata;
++    const char *uuid = PA_BLUETOOTH_UUID_A2DP_SINK;
++    DBusMessage *m;
++    DBusMessageIter i;
++
++    assert(d);
++    assert(d->discovery);
++    assert(d->path);
++
++    pa_log_debug("Connecting A2DP profile on adapter %s", d->path);
++
++    pa_assert_se(m = dbus_message_new_method_call(BLUEZ_SERVICE, d->path, BLUEZ_DEVICE_INTERFACE, "ConnectProfile"));
++
++    dbus_message_iter_init_append(m, &i);
++    dbus_message_iter_append_basic(&i, DBUS_TYPE_STRING, &uuid);
++
++    send_and_add_to_pending(d->discovery, m, connect_profile_reply, NULL);
++}
++
+ pa_bluetooth_discovery* pa_bluetooth_discovery_get(pa_core *c, int headset_backend) {
+     pa_bluetooth_discovery *y;
+     DBusError err;
+diff -urN pulseaudio-6.0.orig/src/modules/bluetooth/bluez5-util.h pulseaudio-6.0/src/modules/bluetooth/bluez5-util.h
+--- pulseaudio-6.0.orig/src/modules/bluetooth/bluez5-util.h	2015-02-12 15:10:35.000000000 +0100
++++ pulseaudio-6.0/src/modules/bluetooth/bluez5-util.h	2015-10-10 16:42:02.395061761 +0200
+@@ -151,6 +151,7 @@
+ pa_hook* pa_bluetooth_discovery_hook(pa_bluetooth_discovery *y, pa_bluetooth_hook_t hook);
+ 
+ const char *pa_bluetooth_profile_to_string(pa_bluetooth_profile_t profile);
++void connect_a2dp_profile(pa_mainloop_api *api PA_GCC_UNUSED, void *userdata);
+ 
+ #define HEADSET_BACKEND_OFONO 0
+ #define HEADSET_BACKEND_NATIVE 1

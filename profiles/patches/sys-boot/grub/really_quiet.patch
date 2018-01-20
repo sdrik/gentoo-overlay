@@ -1,0 +1,52 @@
+diff -ur grub-2.00.orig/grub-core/kern/main.c grub-2.00/grub-core/kern/main.c
+--- grub-2.00.orig/grub-core/kern/main.c	2013-08-04 21:24:58.000000000 +0200
++++ grub-2.00/grub-core/kern/main.c	2014-04-26 10:25:39.331847693 +0200
+@@ -251,15 +251,16 @@
+ void __attribute__ ((noreturn))
+ grub_main (void)
+ {
++  struct grub_term_output *term;
++
+   /* First of all, initialize the machine.  */
+   grub_machine_init ();
+ 
+   grub_boot_time ("After machine init.");
+ 
+-  /* Hello.  */
+-  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+-  grub_printf ("Welcome to GRUB!\n\n");
+-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
++  /* Disable the cursor until we need it.  */
++  FOR_ACTIVE_TERM_OUTPUTS(term)
++    grub_term_setcursor (term, 0);
+ 
+   grub_load_config ();
+ 
+@@ -295,5 +296,10 @@
+   grub_boot_time ("After execution of embedded config. Attempt to go to normal mode");
+ 
+   grub_load_normal_mode ();
++
++  /* If we have to enter rescue mode, enable the cursor again.  */
++  FOR_ACTIVE_TERM_OUTPUTS(term)
++    grub_term_setcursor (term, 1);
++
+   grub_rescue_run ();
+ }
+diff -ur grub-2.00.orig/grub-core/normal/menu.c grub-2.00/grub-core/normal/menu.c
+--- grub-2.00.orig/grub-core/normal/menu.c	2013-08-04 21:24:58.000000000 +0200
++++ grub-2.00/grub-core/normal/menu.c	2014-04-26 10:27:52.925171712 +0200
+@@ -674,12 +674,9 @@
+ 
+ /* Callback invoked immediately before a menu entry is executed.  */
+ static void
+-notify_booting (grub_menu_entry_t entry,
++notify_booting (grub_menu_entry_t entry __attribute__((unused)),
+ 		void *userdata __attribute__((unused)))
+ {
+-  grub_printf ("  ");
+-  grub_printf_ (N_("Booting `%s'"), entry->title);
+-  grub_printf ("\n\n");
+ }
+ 
+ /* Callback invoked when a default menu entry executed because of a timeout

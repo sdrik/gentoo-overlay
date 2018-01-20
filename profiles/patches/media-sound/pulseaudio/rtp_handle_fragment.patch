@@ -1,0 +1,39 @@
+diff -ur pulseaudio-8.0.orig/src/modules/rtp/rtp.c pulseaudio-8.0/src/modules/rtp/rtp.c
+--- pulseaudio-8.0.orig/src/modules/rtp/rtp.c	2016-01-22 08:26:49.000000000 +0100
++++ pulseaudio-8.0/src/modules/rtp/rtp.c	2016-05-08 10:33:35.716949961 +0200
+@@ -154,6 +154,8 @@
+ 
+     c->fd = fd;
+     c->frame_size = frame_size;
++    c->prev_timestamp = 0;
++    c->offset = 0;
+ 
+     c->recv_buf_size = 2000;
+     c->recv_buf = pa_xmalloc(c->recv_buf_size);
+@@ -308,6 +310,14 @@
+         pa_zero(*tstamp);
+     }
+ 
++    if (c->timestamp == c->prev_timestamp) {
++        c->timestamp += c->offset;
++    } else {
++        c->prev_timestamp = c->timestamp;
++        c->offset = 0;
++    }
++    c->offset += (chunk->length / c->frame_size);
++
+     return 0;
+ 
+ fail:
+diff -ur pulseaudio-8.0.orig/src/modules/rtp/rtp.h pulseaudio-8.0/src/modules/rtp/rtp.h
+--- pulseaudio-8.0.orig/src/modules/rtp/rtp.h	2016-01-22 08:26:49.000000000 +0100
++++ pulseaudio-8.0/src/modules/rtp/rtp.h	2016-05-08 10:25:35.319995620 +0200
+@@ -30,6 +30,8 @@
+     int fd;
+     uint16_t sequence;
+     uint32_t timestamp;
++    uint32_t prev_timestamp;
++    uint32_t offset;
+     uint32_t ssrc;
+     uint8_t payload;
+     size_t frame_size;
