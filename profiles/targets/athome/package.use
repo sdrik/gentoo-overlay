@@ -5,7 +5,7 @@ app-portage/layman sync-plugin-portage
 media-libs/mesa -llvm -gallium
 net-wireless/bluez -obex
 net-misc/rsync xattr
-sys-apps/systemd sysv-utils
+sys-apps/systemd sysv-utils gnuefi
 sys-devel/distcc crossdev
 sys-firmware/intel-microcode monolithic
 virtual/linux-sources firmware
