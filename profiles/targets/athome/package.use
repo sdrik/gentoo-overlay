@@ -2,11 +2,15 @@
 app-admin/sudo -sendmail
 app-misc/mc sftp
 app-portage/layman sync-plugin-portage
+media-libs/mesa -llvm -gallium
+net-wireless/bluez -obex
 net-misc/rsync xattr
 sys-apps/systemd sysv-utils
 sys-devel/distcc crossdev
 sys-firmware/intel-microcode monolithic
 virtual/linux-sources firmware
+x11-base/xorg-server -suid
+x11-libs/libdrm libkms
 
 # For sssd
 sys-auth/sssd -acl
@@ -25,11 +29,16 @@ dev-qt/qtcore icu
 x11-libs/libxcb xkb
 
 # MythTV
-virtual/mythtv -mythlogserver
-dev-qt/qtsql mysql
-virtual/mysql -server
 dev-db/mariadb -server
 dev-lang/python sqlite
+dev-lang/spidermonkey minimal
+dev-libs/libxml2 python
+dev-qt/qtsql mysql
+net-dns/avahi mdnsresponder-compat
+sci-libs/fftw threads
+sys-apps/systemd gudev
+virtual/mysql -server
+virtual/mythtv -mythlogserver -hls -theora -vorbis -xvid -avahi
 
 # ABCDE
 media-sound/abcde cdparanoia musicbrainz -id3tag -lame
@@ -45,3 +54,21 @@ app-text/ghostscript-gpl cups
 
 # Docker
 app-emulation/docker btrfs overlay
+
+# Splashutils
+app-arch/bzip2 static-libs
+media-libs/freetype static-libs
+media-libs/lcms static-libs
+virtual/jpeg static-libs
+sys-libs/zlib static-libs
+media-libs/libpng static-libs
+media-libs/libmng static-libs
+media-libs/libjpeg-turbo static-libs
+media-gfx/splashutils fbcondecor -openrc
+
+# Pulseaudio
+media-plugins/alsa-plugins pulseaudio
+media-sound/pulseaudio bluetooth realtime -webrtc-aec -tcpd -asyncns
+
+# MPD
+media-sound/mpd libmpdclient -ffmpeg -alsa -network -fifo
