@@ -15,6 +15,6 @@
 -				if ((scancode & RC6_6A_LCC_MASK) == RC6_6A_MCE_CC) {
 +				if (((scancode & RC6_6A_LCC_MASK) == RC6_6A_MCE_CC) ||
 +					((scancode & RC6_6A_LCC_MASK) == RC6_6A_HP_CC)) {
- 					protocol = RC_TYPE_RC6_MCE;
+ 					protocol = RC_PROTO_RC6_MCE;
  					toggle = !!(scancode & RC6_6A_MCE_TOGGLE_MASK);
  					scancode &= ~RC6_6A_MCE_TOGGLE_MASK;
