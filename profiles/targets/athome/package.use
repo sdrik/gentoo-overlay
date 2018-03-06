@@ -72,3 +72,7 @@ media-sound/pulseaudio bluetooth realtime -webrtc-aec -tcpd -asyncns
 
 # MPD
 media-sound/mpd libmpdclient -ffmpeg -alsa -network -fifo
+
+# IPSec/L2TP
+net-vpn/ipsec-tools nat
+net-dialup/xl2tpd dnsretry
