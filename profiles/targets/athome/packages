@@ -1,4 +1,5 @@
 -*sys-apps/openrc
+*sys-devel/crossdev
 *sys-devel/distcc
 app-admin/sudo
 app-admin/sysstat
