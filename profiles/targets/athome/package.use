@@ -1,5 +1,6 @@
 # Misc system packages
 app-admin/sudo -sendmail
+app-crypt/pinentry -qt5
 app-misc/mc sftp
 app-portage/layman sync-plugin-portage
 media-libs/mesa -llvm -gallium
