@@ -25,7 +25,7 @@ sys-libs/glibc nscd
 net-fs/nfs-utils nfsv41
 
 # QT5
-dev-libs/libpcre pcre16
+dev-libs/libpcre2 pcre16
 dev-qt/qtcore icu
 x11-libs/libxcb xkb
 
