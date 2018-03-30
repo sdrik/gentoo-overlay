@@ -1,0 +1,39 @@
+#!/bin/bash
+
+declare -A tuple profile arch
+
+tuple=(
+	[rpi3-32]=armv7a-hardfloat-linux-gnueabi
+	[pentium4]=i686-pc-linux-gnu
+	[x86-64]=x86_64-pc-linux-gnu
+)
+
+profile=(
+	[rpi3-32]=default/linux/arm/17.0/armv7a/systemd
+	[pentium4]=default/linux/x86/17.0/systemd
+	[x86-64]=default/linux/amd64/17.0/systemd
+)
+
+arch=(
+	[rpi3-32]=armv7l
+	[pentium4]=i686
+	[x86-64]=x86_64
+)
+
+flavor="${2:-${ATHOME_FLAVOR}}"
+flavor="${flavor:-$(cat /.flavor 2>/dev/null)}"
+flavor="${flavor:-x86-64}"
+
+function usage() {
+	echo "Usage: $(basename "$0") {--tuple|--profile|--arch} [FLAVOR]" >&2
+	exit 1
+}
+
+case "$1" in
+	--tuple) ret="${tuple[${flavor}]}" ;;
+	--profile) ret="${profile[${flavor}]}" ;;
+	--arch) ret="${arch[${flavor}]}" ;;
+esac
+
+[ -n "${ret}" ] || usage
+echo "${ret}"

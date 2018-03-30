@@ -1,0 +1,229 @@
+#!/bin/bash
+
+PROGNAME="$(basename "$0")"
+OPTS="$(getopt -o nuoa -l dry-run,unmodified,old,all -n "${PROGNAME}" -- "$@")"
+eval set -- ${OPTS}
+
+DRY_RUN=0
+DELETE_UNMODIFIED=0
+DELETE_UNINSTALLED=0
+
+while true
+do
+	case "$1" in
+	-n | --dry-run) DRY_RUN=1; shift ;;
+	-u | --unmodified) DELETE_UNMODIFIED=1; shift ;;
+	-o | --old) DELETE_UNINSTALLED=1; shift ;;
+	-a | --all) DELETE_UNMODIFIED=1; DELETE_UNINSTALLED=1; shift ;;
+	--) shift; break ;;
+	*) break ;;
+	esac
+done
+
+. /etc/portage/make.conf
+
+declare -g _CPV _BUILD_ID _BUILD_TIME _MD5 _PATH
+
+function db_new() {
+	local db="$1"
+	declare -gA "${db}" "${db}_cpv" "${db}_build_id" "${db}_build_time" "${db}_md5" "${db}_path"
+}
+
+function db_store() {
+	local db="$1"
+	local id="${_CPV}-${_BUILD_ID}"
+
+	eval "${db}[${id}]='${id}'"
+	eval "${db}_cpv[${id}]='${_CPV}'"
+	eval "${db}_build_id[${id}]='${_BUILD_ID}'"
+	eval "${db}_build_time[${id}]='${_BUILD_TIME}'"
+	eval "${db}_md5[${id}]='${_MD5}'"
+	eval "${db}_path[${id}]='${_PATH}'"
+}
+
+function db_load() {
+	local db="$1"
+	local id="${2:-${_CPV}-${_BUILD_ID}}"
+
+	eval "_CPV=\"\${${db}_cpv[${id}]}\""
+	eval "_BUILD_ID=\"\${${db}_build_id[${id}]}\""
+	eval "_BUILD_TIME=\"\${${db}_build_time[${id}]}\""
+	eval "_MD5=\"\${${db}_md5[${id}]}\""
+	eval "_PATH=\"\${${db}_path[${id}]}\""
+}
+
+function db_remove() {
+	local db="$1"
+	local id="${2:-${_CPV}-${_BUILD_ID}}"
+
+	eval "unset ${db}[${id}]"
+	eval "unset ${db}_cpv[${id}]"
+	eval "unset ${db}_build_id[${id}]"
+	eval "unset ${db}_build_time[${id}]"
+	eval "unset ${db}_md5[${id}]"
+	eval "unset ${db}_path[${id}]"
+}
+
+function db_exists() {
+	local db="$1"
+	local id="${_CPV}-${_BUILD_ID}"
+
+	eval "[ -n \"\${${db}[${id}]}\" ]" || return 1
+	eval "[ \"\${${db}_build_time[${id}]}\" = '${_BUILD_TIME}' ]" || return 1
+	eval "[ \"\${${db}_md5[${id}]}\" = '${_MD5}' ]" || return 1
+}
+
+function db_dump() {
+	local db="$1"
+	local id="${2:-${_CPV}-${_BUILD_ID}}"
+
+	echo "CPV=$(eval "echo \"\${${db}_cpv[${id}]}\"")"
+	echo "BUILD_ID=$(eval "echo \"\${${db}_build_id[${id}]}\"")"
+	echo "BUILD_TIME=$(eval "echo \"\${${db}_build_time[${id}]}\"")"
+	echo "MD5=$(eval "echo \"\${${db}_md5[${id}]}\"")"
+	echo "PATH=$(eval "echo \"\${${db}_path[${id}]}\"")"
+	echo
+}
+
+declare -g _GOT_HEADER _NEED_FIX
+
+function got_header() {
+	if [ "$1" = "--" ]
+	then
+		_GOT_HEADER=0
+	else
+		[[ ${_GOT_HEADER} == 1 ]] && return 0
+		[ -z "$1" ] && _GOT_HEADER=1
+		return 1
+	fi
+}
+
+function clear_pkg() {
+	_BUILD_ID=
+	_BUILD_TIME=
+	_CPV=
+	_PATH=
+	_MD5=
+}
+
+function populate_from_line() {
+	case "$1" in
+	CPV:) _CPV="$2" ;;
+	BUILD_ID:) _BUILD_ID="$2" ;;
+	BUILD_TIME:) _BUILD_TIME="$2" ;;
+	MD5:) _MD5="$2" ;;
+	PATH:) _PATH="$2" ;;
+	esac
+}
+
+function populate_from_dir() {
+	local dir="$1"
+
+	_CPV="$(cat "${dir}"/CATEGORY)/$(cat "${dir}"/PF)"
+	_BUILD_ID="$(cat "${dir}"/BUILD_ID)"
+	_BUILD_TIME="$(cat "${dir}"/BUILD_TIME)"
+	_MD5="$(cat "${dir}"/BINPKGMD5)"
+	_PATH=""
+}
+
+function delete_pkg() {
+	[ -n "${_PATH}" ] || return 1
+	[[ ${DRY_RUN} == 1 ]] || rm -f "${PKGDIR}/${_PATH}"
+	_NEED_FIX=1
+}
+
+##############################################################################
+
+db_new INSTALLED
+db_new MISSING
+db_new UNINSTALLED
+db_new UNMODIFIED
+
+for dir in $(ls -d /var/db/pkg/*/*)
+do
+	populate_from_dir "${dir}"
+	db_store INSTALLED
+done
+
+got_header --
+while read key value
+do
+	got_header "${key}" || continue
+	[ -z "${key}" ] && {
+		if db_exists INSTALLED
+		then
+			db_store INSTALLED
+		else
+			db_store UNINSTALLED
+		fi
+		clear_pkg
+		continue
+	}
+	populate_from_line "${key}" "${value}"
+done < "${PKGDIR}"/Packages
+
+for id in "${INSTALLED[@]}"
+do
+	db_load INSTALLED "${id}"
+	[[ -n "${_PATH}" && -f "${PKGDIR}/${_PATH}" ]] || db_store MISSING
+done
+
+for binhost in $(find /var/cache/edb/binhost -name Packages)
+do
+	got_header --
+	while read key value
+	do
+		got_header "${key}" || continue
+		[ -z "${key}" ] && {
+			db_exists INSTALLED && {
+				if db_exists MISSING
+				then
+					db_remove MISSING
+				else
+					db_load INSTALLED
+					db_store UNMODIFIED
+				fi
+			}
+			clear_pkg
+			continue
+		}
+		populate_from_line "${key}" "${value}"
+	done < "${binhost}"
+done
+
+##############################################################################
+
+for id in "${MISSING[@]}"
+do
+	db_load MISSING "${id}"
+	echo "Warning: missing binary package for ${_CPV}"
+done
+
+[[ ${DELETE_UNMODIFIED} == 1 ]] && {
+	for id in "${UNMODIFIED[@]}"
+	do
+		db_load UNMODIFIED "${id}"
+		echo "Removing locally unmodified package ${_CPV} (${_PATH})"
+		delete_pkg
+	done
+}
+
+[[ ${DELETE_UNINSTALLED} == 1 ]] && {
+	for id in "${UNINSTALLED[@]}"
+	do
+		db_load UNINSTALLED "${id}"
+		echo "Removing uninstalled package ${_CPV} (${_PATH})"
+		delete_pkg
+	done
+}
+
+[[ ${_NEED_FIX} == 1 ]] && {
+	if [[ ${DRY_RUN} == 1 ]]
+	then
+		echo "Package list needs fixing."
+	else
+		emaint binhost --fix
+		rmdir "${PKGDIR}/*/*" 2>/dev/null || true
+		rmdir "${PKGDIR}/*" 2>/dev/null || true
+	fi
+}

@@ -1,0 +1,9 @@
+# @system
+=sys-devel/gcc-6.4.0 arm
+=app-portage/cpuid2cpuflags-1 arm
+=app-admin/sysstat-11.4.0 arm
+=sys-block/thin-provisioning-tools-0.7.0 arm
+
+# sssd
+=sys-auth/sssd-1.12.1 arm
+=dev-libs/ding-libs-0.6.0 arm

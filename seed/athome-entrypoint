@@ -1,0 +1,5 @@
+#!/bin/bash
+
+arch="$(athome-flavor --arch 2>/dev/null)"
+[ -n "${arch}" ] && exec /usr/bin/setarch ${arch} "$@"
+exec "$@"
