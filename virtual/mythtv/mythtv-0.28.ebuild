@@ -1,8 +1,7 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-
+EAPI=6
 PYTHON_COMPAT=( python2_7 )
 
 # git diff --relative=mythtv v0.27.6.. > ~/mythtv-0.27.6/patches/mythtv.patch
@@ -23,9 +22,8 @@ SLOT="0/${PV}"
 
 IUSE_INPUT_DEVICES="input_devices_joystick"
 IUSE="alsa altivec autostart bluray cec crystalhd debug dvb dvd egl fftw +hls \
-ieee1394 jack lcd libass lirc +mythlogserver perl pulseaudio python systemd +theora \
-vaapi vdpau +vorbis +wrapper +xml xmltv +xvid zeroconf ${IUSE_INPUT_DEVICES}"
-
+	ieee1394 jack lcd libass lirc +mythlogserver perl pulseaudio python systemd +theora \
+	vaapi vdpau +vorbis +wrapper +xml xmltv +xvid zeroconf ${IUSE_INPUT_DEVICES}"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	bluray? ( xml )
 	theora? ( vorbis )"
@@ -63,7 +61,9 @@ COMMON="
 		sys-fs/udisks:2
 	)
 	cec? ( dev-libs/libcec )
-	dvb? ( virtual/linuxtv-dvb-headers )
+	dvb? (
+		virtual/linuxtv-dvb-headers
+	)
 	dvd? (
 		dev-libs/libcdio:=
 		sys-fs/udisks:2
@@ -105,7 +105,7 @@ COMMON="
 	)
 	systemd? ( sys-apps/systemd:= )
 	theora? ( media-libs/libtheora media-libs/libogg )
-	vaapi? ( x11-libs/libva[opengl] )
+	vaapi? ( x11-libs/libva:=[opengl] )
 	vdpau? ( x11-libs/libvdpau )
 	vorbis? ( >=media-libs/libvorbis-1.0 media-libs/libogg )
 	xml? ( >=dev-libs/libxml2-2.6.0 )
@@ -130,6 +130,5 @@ RDEPEND="${COMMON}
 	dvd? ( media-libs/libdvdcss )
 	xmltv? ( >=media-tv/xmltv-0.5.43 )
 	dev-lang/yasm
-	x11-proto/xf86vidmodeproto
-	x11-proto/xineramaproto
+	x11-base/xorg-proto
 "
